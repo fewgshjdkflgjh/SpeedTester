@@ -1,0 +1,37 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+#a {
+    display: none;
+}
+
+.e {
+    color: red;
+    font-size: 18px;
+    margin-top: 50px;
+}
+
+.c {
+    font-size: 18px;
+    margin-top: 50px;
+}
+
+#i {
+    margin-top: 20px;
+    width: 80%;
+    margin-left: 10%;
+    border-collapse: collapse;
+}
+
+#i th, #i td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#i th {
+    background-color: #f2f2f2;
+}
